@@ -1,0 +1,20 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Environment files.
+#
+# `.env` here is per-machine: it points the site at whichever API address this
+# computer can reach, which on a laptop is a LAN address that means nothing to
+# anybody else. `.env.example` is the committed one, and documents the choices.
+#
+# There is no credential in this directory and there must never be one — this is
+# a public website, and anything shipped in its bundle is readable by everyone
+# who opens the page.
+.env
+.env.local
+.env.*.local
+!.env.example

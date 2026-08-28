@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+@theme {
+  /* The hero ground is a warm sand rather than the original blue-grey. It is a
+     light surface, so anything sitting on it is dark type — see PageHero and the
+     unscrolled Navbar. White on this would be about 1.5:1 and unreadable. */
+  --color-hero: #e9cf9f;
+  --color-hero-deep: #dcbe86;
+  --color-plum: #4a2c40;
+  --color-plum-dark: #3a2131;
+  --color-ink: #101114;
+  --color-ink-soft: #1b1c1f;
+  --color-paper: #f4f3f1;
+  --color-mail: #e2703a;
+  /* Secondary text. Tailwind's slate greys are blue-tinted, which reads cold
+     next to the sand, and slate-400 is only 2.56:1 on white — too faint for the
+     small print it was being used for. This is warm and clears AA at 5.98:1. */
+  --color-muted: #6b6257;
+  /* Was a link blue. Now a bronze from the same warm family, kept dark enough to
+     stay legible as small text on white (5.6:1). */
+  --color-tg: #8a5f20;
+  /* Lifted variants of the two link colours, for use on the dark footer */
+  --color-mail-bright: #f08a56;
+  --color-tg-bright: #e9cf9f;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Depth
+   ---------------------------------------------------------------------------
+   Two ideas do all the work here.
+
+   1. An elevation ramp. Each step stacks several shadows rather than one: a
+      tight contact shadow that anchors the element to the surface, then wider
+      and softer casts above it. A single blurred shadow reads as a sticker; a
+      stack reads as an object with a gap under it.
+
+   2. Pointer tilt. `useTilt` writes four custom properties onto a card —
+      --tx-n / --ty-n (pointer offset from centre, -1..1) and --mx / --my (the
+      pointer itself, for the sheen). Everything below is derived from those in
+      CSS, so a pointer move only ever recomposites: no layout, no React render.
+
+   Children marked .tilt-layer inherit those properties and shift slightly
+   against the tilt, which is what sells the parallax. They are deliberately
+   2D translations — `preserve-3d` would be undone by the `overflow: hidden`
+   these cards need to clip their images.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --elev-contact: 0 1px 2px rgba(16, 17, 20, 0.06);
+
+  --elev-1: var(--elev-contact), 0 2px 6px -1px rgba(16, 17, 20, 0.07),
+    0 6px 14px -4px rgba(16, 17, 20, 0.06);
+
+  --elev-2: var(--elev-contact), 0 4px 10px -2px rgba(16, 17, 20, 0.08),
+    0 12px 26px -8px rgba(16, 17, 20, 0.1), 0 22px 44px -18px rgba(16, 17, 20, 0.12);
+
+  --elev-3: var(--elev-contact), 0 8px 18px -4px rgba(16, 17, 20, 0.1),
+    0 20px 42px -12px rgba(16, 17, 20, 0.14), 0 38px 74px -26px rgba(16, 17, 20, 0.18);
+
+  --elev-4: var(--elev-contact), 0 12px 26px -6px rgba(16, 17, 20, 0.12),
+    0 30px 60px -16px rgba(16, 17, 20, 0.18), 0 56px 104px -34px rgba(16, 17, 20, 0.22);
+
+  /* Easing that overshoots very slightly, so cards settle rather than stop. */
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.elev-1 {
+  box-shadow: var(--elev-1);
+}
+.elev-2 {
+  box-shadow: var(--elev-2);
+}
+.elev-3 {
+  box-shadow: var(--elev-3);
+}
+
+/* --- Pointer tilt --------------------------------------------------------- */
+
+.tilt {
+  --tx-n: 0;
+  --ty-n: 0;
+  --mx: 50%;
+  --my: 50%;
+  --tilt-max: 7deg;
+  --tilt-scale: 1;
+  --tilt-shift: 7px;
+  --tilt-glare: 0;
+
+  position: relative;
+  transform: perspective(1100px) rotateX(calc(var(--tilt-max) * var(--ty-n) * -1))
+    rotateY(calc(var(--tilt-max) * var(--tx-n))) scale(var(--tilt-scale));
+  transform-origin: center;
+  /* These rules sit outside Tailwind's cascade layers, so they beat its
+     `transition-*` utilities. Every property that needs to animate on these
+     cards has to be named here rather than left to a utility class. */
+  transition:
+    transform 520ms var(--ease-settle),
+    box-shadow 520ms var(--ease-settle),
+    border-color 300ms ease-out;
+}
+
+/* Follow the pointer promptly on the way in; the slow transition above is what
+   makes the card glide back to rest once it leaves. */
+.tilt[data-tilting='true'] {
+  --tilt-scale: 1.018;
+  transition:
+    transform 90ms linear,
+    box-shadow 300ms ease-out;
+  box-shadow: var(--elev-3);
+  z-index: 1;
+}
+
+/* Wider cards look wrong with the same rotation as a small tile. */
+.tilt-flat {
+  --tilt-max: 3.5deg;
+  --tilt-shift: 4px;
+}
+
+/* `scale` is listed separately because Tailwind v4 emits scale utilities as the
+   standalone `scale` property, not inside `transform` — so the two compose, but
+   both have to be transitioned by name. */
+.tilt-layer {
+  transform: translate3d(
+    calc(var(--tx-n) * var(--tilt-shift)),
+    calc(var(--ty-n) * var(--tilt-shift)),
+    0
+  );
+  transition:
+    transform 520ms var(--ease-settle),
+    scale 520ms var(--ease-settle);
+}
+
+.tilt[data-tilting='true'] .tilt-layer {
+  transition:
+    transform 90ms linear,
+    scale 520ms var(--ease-settle);
+}
+
+/* Specular sheen tracking the pointer — the cue that reads as a glossy surface
+   catching a light source. Sits above the card's own content. */
+.tilt-glare::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+  opacity: var(--tilt-glare);
+  transition: opacity 400ms ease-out;
+  background: radial-gradient(
+    38% 38% at var(--mx) var(--my),
+    rgba(255, 255, 255, 0.42),
+    rgba(255, 255, 255, 0) 72%
+  );
+}
+
+.tilt[data-tilting='true'].tilt-glare {
+  --tilt-glare: 1;
+}
+
+/* --- Hero slides ----------------------------------------------------------
+   A slow push-in on whichever slide is showing. The hero is already pinned
+   while the content slab scrolls over it, so this adds a second, independent
+   rate of movement — the thing that makes a flat backdrop read as distance. */
+
+@keyframes hero-drift {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.13) translate3d(0, -1.2%, 0);
+  }
+}
+
+.hero-slide {
+  transform: scale(1.04);
+}
+
+.hero-slide[data-active='true'] {
+  animation: hero-drift 14s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide[data-active='true'] {
+    animation: none;
+  }
+}
+
+/* --- Pressable controls --------------------------------------------------- */
+
+.pressable {
+  transition:
+    transform 160ms var(--ease-settle),
+    box-shadow 160ms var(--ease-settle);
+  box-shadow: var(--elev-2);
+}
+
+.pressable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--elev-3);
+}
+
+.pressable:active {
+  transform: translateY(1px);
+  box-shadow: var(--elev-1);
+  transition-duration: 60ms;
+}
+
+/* --- Opt-outs ------------------------------------------------------------- */
+
+/* Tilt is a pointer affordance. Without a fine pointer there is nothing to
+   track, and the transform would just be a permanent skew. */
+@media (hover: none), (pointer: coarse) {
+  .tilt,
+  .tilt-layer {
+    transform: none;
+  }
+  .tilt-glare::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .tilt,
+  .tilt-layer,
+  .pressable {
+    transform: none !important;
+    transition: box-shadow 200ms ease-out;
+  }
+  .tilt-glare::after {
+    display: none;
+  }
+}

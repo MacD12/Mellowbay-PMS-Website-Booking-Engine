@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+
+# Databases — the system of record is never committed
+*.db
+*.db-wal
+*.db-shm
+data/
+backups/
+
+# Local mongo dumps / migration artefacts
+*.bson
+dump/
+
+# Environment
+#
+# `.env` holds real credentials: the Beds24 refresh token, and the secret key
+# that decrypts both those credentials and the guests' passport scans.
+# `.env.example` is generated from src/config.ts, carries no values, and is the
+# one that belongs in the repository.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

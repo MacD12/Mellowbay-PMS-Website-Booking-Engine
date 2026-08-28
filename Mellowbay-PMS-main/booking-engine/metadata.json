@@ -1,0 +1,6 @@
+{
+  "name": "Mellow Bay",
+  "description": "Beachfront hostel, coliving and coworking in Weligama, Sri Lanka.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
