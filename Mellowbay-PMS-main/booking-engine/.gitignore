@@ -5,6 +5,11 @@ coverage/
 .DS_Store
 *.log
 
+# The server build of the app, produced by `npm run build:ssr` purely so
+# scripts/prerender.mjs can import the components in Node. It is an
+# intermediate, thrown away once dist/ has its HTML.
+dist-ssr/
+
 # Environment files.
 #
 # `.env` here is per-machine: it points the site at whichever API address this

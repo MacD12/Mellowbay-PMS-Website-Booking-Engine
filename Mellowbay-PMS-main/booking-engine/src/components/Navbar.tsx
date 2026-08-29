@@ -5,11 +5,27 @@ import { HERO_DATA } from '../data/mockData';
 
 // Served from public/ rather than imported, so the GitHub Pages sub-path (BASE_PATH)
 // is honoured without the bundler needing the file present at build time.
-const LOGO_SRC = `${import.meta.env.BASE_URL}mellow-bay-logo.png`;
+// Served from public/ rather than imported, so the GitHub Pages sub-path
+// (BASE_PATH) is honoured without the bundler needing the file at build time.
+//
+// 480px-wide copies of the supplied artwork, which is 3764px. The mark is drawn
+// at 114–136 CSS pixels, so the master was thirty times wider than the slot:
+// 91 kB to download and an 18 MB bitmap to hold in memory on a phone, for a
+// logo. These are around 15 kB each and still cover 3x displays. The masters
+// stay in public/ as mellow-bay-logo-{white,black}.png.
+const LOGO_WHITE = `${import.meta.env.BASE_URL}mellow-bay-logo-white-480.png`;
+const LOGO_BLACK = `${import.meta.env.BASE_URL}mellow-bay-logo-black-480.png`;
 
+// The files' own pixels. Stated so the bar reserves the mark's box on the first
+// paint — the logo sits above every page's headline, so a logo that pops in
+// after layout shifts the whole page under the reader.
+const LOGO_SIZE = { width: 480, height: 158 };
+
+// Coworking leads: it is the main business, and the link label is also the
+// word this site needs to rank for.
 export const NAV_LINKS = [
+  { to: '/coworking', label: 'Coworking' },
   { to: '/rooms', label: 'Rooms' },
-  { to: '/eat-and-work', label: 'Eat & work' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
   { to: '/book', label: 'Book' },
@@ -47,15 +63,41 @@ export const Navbar: React.FC = () => {
       {/* Three columns of equal weight so the links land on the true optical centre,
           regardless of how wide the wordmark or the CTA happen to be. */}
       <div className="max-w-6xl mx-auto grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 sm:px-9 md:px-14 h-14 sm:h-16">
-        <Link to="/" className="justify-self-start flex items-center focus:outline-none">
-          {/* The mark is white artwork on its own black ground, so it reads as a badge
-              on the sand pages and melts into the bar once it goes solid. The type
-              classes only ever show if the file is missing — the alt text then falls
-              back into roughly the wordmark it replaced. */}
+        <Link
+          to="/"
+          aria-label={`${HERO_DATA.companyName} — beach coworking and coliving in Weligama, home`}
+          className="justify-self-start relative flex items-center focus:outline-none"
+        >
+          {/* Two masters, one per ground: white artwork over the dark hero and the
+              solid bar, black over the light sand pages. Cross-fading them on the
+              same 300ms curve as the bar's own background means the change reads as
+              one movement — and it uses the real black artwork rather than a CSS
+              filter, so the mark is the colour the brand actually specifies.
+              Both are decorative: the link above carries the accessible name, and
+              two alt texts on one link would be read out twice. */}
           <img
-            src={LOGO_SRC}
-            alt={HERO_DATA.companyName}
-            className="h-11 sm:h-14 w-auto object-contain font-semibold text-[11px] sm:text-xs tracking-[0.18em] uppercase whitespace-nowrap"
+            src={LOGO_WHITE}
+            alt=""
+            width={LOGO_SIZE.width}
+            height={LOGO_SIZE.height}
+            decoding="async"
+            // In the bar on every page, above the fold on all of them: this is
+            // the one image that should never wait.
+            fetchPriority="high"
+            className={`h-10 sm:h-12 w-auto object-contain transition-opacity duration-300 ${
+              onLight ? 'opacity-0' : 'opacity-100'
+            }`}
+          />
+          <img
+            src={LOGO_BLACK}
+            alt=""
+            width={LOGO_SIZE.width}
+            height={LOGO_SIZE.height}
+            decoding="async"
+            aria-hidden="true"
+            className={`absolute inset-0 h-10 sm:h-12 w-auto object-contain transition-opacity duration-300 ${
+              onLight ? 'opacity-100' : 'opacity-0'
+            }`}
           />
         </Link>
 

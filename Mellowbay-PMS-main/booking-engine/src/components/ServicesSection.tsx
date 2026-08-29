@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUpRight, LayoutGrid, Settings } from 'lucide-react';
 import { SERVICES_DATA, SERVICE_HIGHLIGHTS } from '../data/mockData';
+import { Photo } from './Photo';
 import { TiltLink } from './Tilt';
 
 const HIGHLIGHT_ICONS = [LayoutGrid, Settings];
@@ -15,12 +16,12 @@ export const ServicesSection: React.FC = () => {
         {/* Left column */}
         <div className="lg:col-span-5 flex flex-col lg:min-h-[420px]">
           <h2 className="text-ink text-[30px] sm:text-4xl font-medium tracking-[-0.02em] leading-[1.12]">
-            A place to sleep, eat and work — all of it on the sand
+            A place to work, sleep and live — all of it on the sand
           </h2>
 
           <p className="mt-5 text-slate-500 text-[11.5px] leading-relaxed max-w-sm">
-            Mellow Bay is a beachfront hostel and coliving space in Weligama, with its own stretch of
-            beach, a restaurant, a bar and a workspace for guests who stay a while.
+            Mellow Bay is a beachfront coworking space, hostel and coliving house in Weligama, with
+            its own stretch of beach and a dedicated workspace for guests who stay a while.
           </p>
 
           {/* Two quiet icon highlights, pinned to the bottom of the column */}
@@ -47,10 +48,8 @@ export const ServicesSection: React.FC = () => {
               className="group bg-white rounded-2xl p-3.5 border border-slate-200/70 elev-1 hover:border-slate-300 flex flex-col sm:flex-row sm:items-start gap-5"
             >
               <div className="w-full sm:w-[104px] h-32 sm:h-[104px] rounded-xl overflow-hidden shrink-0 bg-slate-100">
-                <img
-                  src={card.imageUrl}
-                  alt={card.title}
-                  referrerPolicy="no-referrer"
+                <Photo
+                  photo={card.image}
                   className="tilt-layer w-full h-full object-cover scale-[1.06] transition-transform duration-500 group-hover:scale-[1.12]"
                 />
               </div>

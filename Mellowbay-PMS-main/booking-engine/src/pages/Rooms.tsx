@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { HERO_DATA, ROOM_TYPES } from '../data/mockData';
 import { IMAGES } from '../assets/images';
 import { PageHero } from '../components/PageHero';
+import { Photo } from '../components/Photo';
 import { Slab } from '../components/Slab';
 import { TiltBox } from '../components/Tilt';
 import { useModals } from '../ui/ModalContext';
@@ -25,10 +26,9 @@ export const Rooms: React.FC = () => {
     <>
       <PageHero
         eyebrow="Where you sleep"
-        title="Five ways to stay"
-        intro="A private double, a family suite, or a bed in one of the air-conditioned dorms — all a few minutes from Weligama Beach."
-        image={IMAGES.roomKingBed}
-        imageAlt="A private room at Mellow Bay"
+        title="Rooms and dorms in Weligama"
+        intro="A private double, a family suite, or a bed in one of the air-conditioned dorms — all a few minutes from Weligama Beach, and all a short walk from the desks."
+        photo={IMAGES.roomKingBed}
       />
 
       <Slab>
@@ -65,10 +65,8 @@ export const Rooms: React.FC = () => {
                 className="bg-white rounded-[20px] border border-slate-200/70 elev-1 overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-0"
               >
                 <div className="md:col-span-4 aspect-[4/3] md:aspect-auto md:min-h-[240px] bg-slate-100 overflow-hidden">
-                  <img
-                    src={room.imageUrl}
-                    alt={room.title}
-                    referrerPolicy="no-referrer"
+                  <Photo
+                    photo={room.image}
                     className="tilt-layer w-full h-full object-cover scale-[1.06]"
                   />
                 </div>

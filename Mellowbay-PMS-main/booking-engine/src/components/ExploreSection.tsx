@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { SITE_SECTIONS } from '../data/mockData';
+import { Photo } from './Photo';
 import { TiltLink } from './Tilt';
 
 /** Closing hub on the home page — a way through to every other page on the site. */
@@ -26,10 +27,8 @@ export const ExploreSection: React.FC = () => (
           <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
             {/* Scaled a touch past the frame so the parallax shift never
                 exposes an edge as the card tilts. */}
-            <img
-              src={section.imageUrl}
-              alt={section.title}
-              referrerPolicy="no-referrer"
+            <Photo
+              photo={section.image}
               className="tilt-layer w-full h-full object-cover scale-[1.06] transition-transform duration-500 group-hover:scale-[1.12]"
             />
           </div>

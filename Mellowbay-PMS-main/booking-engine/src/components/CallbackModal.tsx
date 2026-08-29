@@ -37,7 +37,7 @@ export const CallbackModal: React.FC<CallbackModalProps> = ({ isOpen, onClose })
               </div>
               <h3 className="text-xl font-medium text-ink">Ask us anything</h3>
               <p className="text-slate-500 text-xs leading-relaxed">
-                Questions about rooms, the restaurant, airport pickup or working from the property —
+                Questions about rooms, the coworking space, monthly rates or airport pickup —
                 leave your number and we will call you back.
               </p>
             </div>

@@ -3,6 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../assets/images';
 import { HERO_DATA, REVIEW_CATEGORIES } from '../data/mockData';
+import { Photo } from './Photo';
 import { TiltBox } from './Tilt';
 
 interface GridFeaturesSectionProps {
@@ -59,10 +60,8 @@ export const GridFeaturesSection: React.FC<GridFeaturesSectionProps> = ({
           <div className="mt-4 flex-1 relative overflow-hidden rounded-[14px] bg-slate-100">
             {/* TODO: no beach photograph exists in the current shoot — this is the
                 courtyard. Swap in a real beach frame when one is available. */}
-            <img
-              src={IMAGES.courtyardAbove}
-              alt="The courtyard and garden, looking out over the palms"
-              referrerPolicy="no-referrer"
+            <Photo
+              photo={IMAGES.courtyardAbove}
               className="tilt-layer w-full h-full object-cover scale-[1.06]"
             />
             <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-ink/45 to-transparent">
@@ -99,40 +98,36 @@ export const GridFeaturesSection: React.FC<GridFeaturesSectionProps> = ({
           </div>
         </TiltBox>
 
-        {/* 3 — Restaurant (dark) */}
+        {/* 3 — The workspace (dark) */}
         <TiltBox className="bg-ink rounded-[20px] p-4 flex flex-col min-h-[300px] elev-2">
           <h3 className="text-white text-[15px] font-medium leading-snug">
-            Restaurant and bar open all day
+            A dedicated coworking space on site
           </h3>
 
           <div className="mt-4 flex-1 relative overflow-hidden rounded-[14px] bg-ink-soft">
-            <img
-              src={IMAGES.restaurantTables}
-              alt="The restaurant, with the kitchen counter behind"
-              referrerPolicy="no-referrer"
+            <Photo
+              photo={IMAGES.coworkingDesks}
               className="tilt-layer w-full h-full object-cover opacity-90 scale-[1.06]"
             />
             <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-ink/80 to-transparent">
-              <MoreLink to="/eat-and-work#eat" label="See the menu" />
+              <MoreLink to="/coworking" label="See the workspace" />
             </div>
           </div>
         </TiltBox>
 
-        {/* 4 — Coworking */}
+        {/* 4 — Coliving */}
         <TiltBox className="bg-white rounded-[20px] p-4 border border-slate-200/70 elev-1 flex flex-col min-h-[300px]">
           <h3 className="text-ink text-[15px] font-medium leading-snug">
-            Coworking, yoga and a garden terrace
+            Coliving, yoga and a garden terrace
           </h3>
 
           <div className="mt-4 flex-1 relative overflow-hidden rounded-[14px] bg-slate-100">
-            <img
-              src={IMAGES.coworkingDesks}
-              alt="Desks in the coworking space"
-              referrerPolicy="no-referrer"
+            <Photo
+              photo={IMAGES.gardenTerraceDay}
               className="tilt-layer w-full h-full object-cover scale-[1.06]"
             />
             <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-ink/45 to-transparent">
-              <MoreLink to="/eat-and-work#work" label="Work from here" />
+              <MoreLink to="/about" label="What the place is" />
             </div>
           </div>
         </TiltBox>

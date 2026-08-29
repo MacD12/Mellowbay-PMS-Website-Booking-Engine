@@ -16,8 +16,7 @@ export const Contact: React.FC = () => {
         eyebrow="Find us"
         title="Matara Road, Weligama"
         intro="On the beach side of the Matara Road in Pelena, a six-minute walk from Weligama Beach and under an hour from Koggala Airport."
-        image={IMAGES.courtyardAbove}
-        imageAlt="The courtyard at Mellow Bay in Weligama"
+        photo={IMAGES.courtyardAbove}
       />
 
       <Slab>
@@ -59,7 +58,7 @@ export const Contact: React.FC = () => {
                 </h2>
                 <p className="text-white/55 text-[11.5px] leading-relaxed">
                   Build your stay and get a price in a couple of minutes. For anything else —
-                  airport pickup, long stays, a table in the restaurant — send us a note.
+                  airport pickup, a monthly rate, a desk in the coworking space — send us a note.
                 </p>
               </div>
 

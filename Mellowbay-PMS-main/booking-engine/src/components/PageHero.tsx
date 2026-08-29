@@ -1,24 +1,31 @@
 import React from 'react';
+import { Photo } from './Photo';
+import type { Photo as PhotoData } from '../types';
 
 interface PageHeroProps {
   eyebrow: string;
   title: string;
   intro: string;
-  image: string;
-  imageAlt: string;
+  photo: PhotoData;
+  /** Overrides the photo's own alt text, for the rare frame used off-topic. */
+  imageAlt?: string;
 }
 
 /**
  * Header band for the inner pages — the same pinned, blue-ground treatment as the
  * home hero, but shorter and with a single line of type.
+ *
+ * The photograph is this page's Largest Contentful Paint on every viewport, so
+ * both copies load eagerly at high priority. They share one URL, so the two
+ * elements cost one request.
  */
-export const PageHero: React.FC<PageHeroProps> = ({ eyebrow, title, intro, image, imageAlt }) => (
+export const PageHero: React.FC<PageHeroProps> = ({ eyebrow, title, intro, photo, imageAlt }) => (
   <section className="sticky top-0 z-0 bg-hero overflow-hidden">
     <div className="hidden lg:block absolute top-14 right-0 w-[46%] h-[380px] rounded-l-[28px] overflow-hidden shadow-[0_24px_60px_-24px_rgba(16,17,20,0.45)]">
-      <img
-        src={image}
+      <Photo
+        photo={photo}
         alt={imageAlt}
-        referrerPolicy="no-referrer"
+        priority
         className="w-full h-full object-cover object-center"
       />
     </div>
@@ -40,10 +47,10 @@ export const PageHero: React.FC<PageHeroProps> = ({ eyebrow, title, intro, image
 
       {/* Mobile / tablet image */}
       <div className="lg:hidden mt-8 rounded-[22px] overflow-hidden aspect-[4/3] shadow-xl">
-        <img
-          src={image}
+        <Photo
+          photo={photo}
           alt={imageAlt}
-          referrerPolicy="no-referrer"
+          priority
           className="w-full h-full object-cover object-center"
         />
       </div>

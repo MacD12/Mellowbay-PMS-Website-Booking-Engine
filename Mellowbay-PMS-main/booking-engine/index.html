@@ -3,10 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mellow Bay</title>
+
+    <!--
+      These are defaults. The build (scripts/prerender.mjs) rewrites the title,
+      description, canonical, Open Graph block and JSON-LD per route, so what a
+      crawler downloads for /coworking already describes /coworking. What is
+      here is what `npm run dev` shows, and the floor if the prerender is ever
+      skipped.
+    -->
+    <title>Mellow Bay Living | Beach Coworking &amp; Coliving in Weligama, Sri Lanka</title>
+    <meta
+      name="description"
+      content="A beachfront coworking space, hostel and coliving house on Sri Lanka's south coast. Fast WiFi, air-conditioned rooms and dorms, six minutes from Weligama Beach."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#101114" />
+    <meta name="author" content="Mellow Bay Living" />
+
+    <link rel="canonical" href="https://mellowbayliving.com/" />
+
+    <!-- The circular monogram, cropped in from the master's wide margins so the
+         circle still fills a 16px tab. The wide wordmark cannot be used here: at
+         favicon size a 3:1 lockup is an illegible strip. -->
+    <link rel="icon" type="image/png" sizes="256x256" href="/mellow-bay-icon-256.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/mellow-bay-icon-180.png" />
+
+    <!-- hreflang is injected per route by the prerender step, because each
+         alternate has to name its own page. A single pair hard-coded here would
+         claim every page is the home page, which gets the cluster discarded. -->
+
     <script>
       // Decodes the `/?/rooms` form that public/404.html redirects deep links
       // into, back to a real path, before React Router reads the URL.
+      //
+      // With the site prerendered, every route in the sitemap is a real file
+      // and never reaches this. It stays for hosts that serve a single
+      // index.html for everything, and for old links to paths that no longer
+      // have a page of their own.
       (function () {
         var l = window.location;
         if (l.search[1] === '/') {
@@ -25,4 +58,3 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

@@ -1,0 +1,20 @@
+# Host redirect rules. Netlify and Cloudflare Pages read this file verbatim;
+# Vercel wants the same rules in vercel.json, and nginx/Apache in their own
+# config. If the site is served somewhere that ignores this file, the two 301s
+# below still need to exist there, or the old URLs 404.
+#
+# Existing files always win over these rules, so the prerendered
+# /coworking/index.html is served directly and never falls through.
+
+# The Eat & Work page is gone — the business has no restaurant. Both of its old
+# URLs point at the workspace page that replaced it. 301, not 302: the move is
+# permanent, and only a 301 passes on whatever ranking the old URLs held.
+/eat-and-work    /coworking    301
+/restaurant      /coworking    301
+
+# The old /coworking path already resolves to the real page, so it needs no rule.
+
+# SPA fallback, last. Any path with no prerendered file is handed index.html and
+# React Router sorts it out client-side. Kept at 200 rather than a redirect so
+# the URL the visitor typed survives.
+/*               /index.html   200

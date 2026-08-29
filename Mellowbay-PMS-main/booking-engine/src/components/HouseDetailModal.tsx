@@ -3,7 +3,8 @@ import { CheckCircle2, Sparkles, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { IMAGES } from '../assets/images';
 import { HERO_DATA } from '../data/mockData';
-import { RoomType } from '../types';
+import { Photo } from './Photo';
+import { RoomType, Photo as PhotoData } from '../types';
 
 interface RoomDetailModalProps {
   project: RoomType | null;
@@ -16,12 +17,12 @@ export const HouseDetailModal: React.FC<RoomDetailModalProps> = ({
   onClose,
 
 }) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<PhotoData | null>(null);
 
   if (!project) return null;
 
-  const currentImg = selectedImage || project.imageUrl;
-  const thumbnails = [project.imageUrl, IMAGES.roomPillowDetail];
+  const currentImg = selectedImage ?? project.image;
+  const thumbnails = [project.image, IMAGES.roomPillowDetail];
 
   return (
     <div className="fixed inset-0 z-50 bg-ink/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
@@ -38,10 +39,9 @@ export const HouseDetailModal: React.FC<RoomDetailModalProps> = ({
           {/* Gallery */}
           <div className="md:col-span-7 space-y-3">
             <div className="overflow-hidden rounded-2xl bg-slate-100 aspect-[16/10] relative">
-              <img
-                src={currentImg}
-                alt={project.title}
-                referrerPolicy="no-referrer"
+              <Photo
+                photo={currentImg}
+                alt={`${project.title} at Mellow Bay, Weligama`}
                 className="w-full h-full object-cover"
               />
               <span className="absolute bottom-3 left-3 bg-ink/80 backdrop-blur-sm text-white text-[11px] font-medium px-3 py-1 rounded-lg">
@@ -52,18 +52,18 @@ export const HouseDetailModal: React.FC<RoomDetailModalProps> = ({
             <div className="flex gap-2">
               {thumbnails.map((thumb, idx) => (
                 <button
-                  key={idx}
+                  key={thumb.src}
+                  type="button"
                   onClick={() => setSelectedImage(thumb)}
+                  aria-label={`Show photo ${idx + 1} of ${thumbnails.length}`}
+                  aria-pressed={currentImg.src === thumb.src}
                   className={`w-20 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-colors ${
-                    currentImg === thumb ? 'border-plum' : 'border-transparent'
+                    currentImg.src === thumb.src ? 'border-plum' : 'border-transparent'
                   }`}
                 >
-                  <img
-                    src={thumb}
-                    alt={idx === 0 ? 'Room' : 'Property'}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                  />
+                  {/* Decorative: the button already carries the label, and the
+                      full-size image above repeats the description. */}
+                  <Photo photo={thumb} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

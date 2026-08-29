@@ -2,17 +2,19 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { IMAGES } from '../assets/images';
 import { HERO_DATA } from '../data/mockData';
+import { Photo } from './Photo';
 
 interface HeroSectionProps {
   onOpenQuiz: () => void;
 }
 
-// Landscape crops only — these run full-bleed behind the headline.
+// Landscape crops only — these run full-bleed behind the headline. The
+// workspace leads, because that is what the business is.
 const SLIDES = [
-  { src: IMAGES.restaurantSeating, alt: 'The restaurant and lounge at Mellow Bay' },
-  { src: IMAGES.coworkingPeople, alt: 'Guests working in the coworking space' },
-  { src: IMAGES.gardenTerraceDay, alt: 'The garden terrace' },
-  { src: IMAGES.roomDoors, alt: 'Guest room doors at Mellow Bay' },
+  IMAGES.coworkingPeople,
+  IMAGES.coworkingDesks,
+  IMAGES.gardenTerraceDay,
+  IMAGES.roomDoors,
 ];
 
 const INTERVAL = 6000;
@@ -44,13 +46,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenQuiz }) => {
       {/* Full-bleed slides, cross-fading */}
       <div className="absolute inset-0">
         {SLIDES.map((slide, i) => (
-          <img
+          <Photo
             key={slide.src}
-            src={slide.src}
+            photo={slide}
+            // Only the visible slide is described. The other three are the same
+            // subject to a screen reader — announcing four is noise.
             alt={i === index ? slide.alt : ''}
             aria-hidden={i === index ? undefined : true}
             data-active={i === index}
-            referrerPolicy="no-referrer"
+            // The first frame is the page's Largest Contentful Paint. The other
+            // three sit in the viewport too, so they cannot be lazy-loaded out
+            // of the way — but they can be told to queue behind it.
+            priority={i === 0}
+            {...(i === 0 ? {} : { loading: 'lazy' as const, fetchPriority: 'low' as const })}
             className={`hero-slide absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ease-out ${
               i === index ? 'opacity-100' : 'opacity-0'
             }`}
@@ -97,6 +105,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenQuiz }) => {
             {SLIDES.map((slide, i) => (
               <button
                 key={slide.src}
+                type="button"
                 onClick={() => go(i)}
                 aria-label={`Show slide ${i + 1} of ${SLIDES.length}`}
                 aria-current={i === index}

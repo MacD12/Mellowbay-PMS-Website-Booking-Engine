@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, X } from 'lucide-react';
 import { GALLERY_PHOTOS } from '../data/mockData';
+import { Photo } from './Photo';
 import { TiltBox } from './Tilt';
 
 interface PhotoGalleryModalProps {
@@ -24,7 +25,7 @@ const SPANS = [
   '',
   '',
   '',
-  'lg:row-span-2', // cake and coffee — the tall one
+  'lg:row-span-2', // the beanbag — the tall one, and the only portrait crop here
   '',
   '',
   '',
@@ -44,7 +45,7 @@ export const PhotoGalleryModal: React.FC<PhotoGalleryModalProps> = ({ isOpen, on
               Around the property
             </h2>
             <p className="text-slate-500 text-xs mt-1">
-              The restaurant, the rooms, the workspace and the garden terrace
+              The workspace, the rooms, the shared lounges and the garden terrace
             </p>
           </div>
           <button
@@ -68,10 +69,8 @@ export const PhotoGalleryModal: React.FC<PhotoGalleryModalProps> = ({ isOpen, on
               flat
               className={`group relative overflow-hidden rounded-2xl bg-ink ${SPANS[i] ?? ''}`}
             >
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                referrerPolicy="no-referrer"
+              <Photo
+                photo={item.image}
                 className="tilt-layer h-full w-full object-cover scale-[1.06] transition-transform duration-500 group-hover:scale-[1.12]"
               />
 

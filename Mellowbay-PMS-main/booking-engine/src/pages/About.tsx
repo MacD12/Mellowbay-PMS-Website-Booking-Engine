@@ -9,6 +9,7 @@ import {
   ROOM_TYPES,
 } from '../data/mockData';
 import { PageHero } from '../components/PageHero';
+import { Photo } from '../components/Photo';
 import { Slab } from '../components/Slab';
 
 export const About: React.FC = () => {
@@ -26,10 +27,9 @@ export const About: React.FC = () => {
     <>
       <PageHero
         eyebrow="About us"
-        title="A hostel that people keep not leaving"
-        intro="Mellow Bay is a beachfront hostel, restaurant and coworking space on Sri Lanka's south coast — built for travellers who arrive for a few nights and rearrange their plans."
-        image={IMAGES.terraceNight}
-        imageAlt="Guests on the terrace at Mellow Bay after dark"
+        title="A coliving house people keep not leaving"
+        intro="Mellow Bay is a beachfront coworking space, hostel and coliving house on Sri Lanka's south coast — built for people who arrive for a few nights and rearrange their plans."
+        photo={IMAGES.terraceNight}
       />
 
       <Slab>
@@ -50,14 +50,17 @@ export const About: React.FC = () => {
                 Mellow Bay.
               </p>
               <p>
-                There is a restaurant and a bar on site, rooms that range from a bunk in the
-                female-only dorm to a family suite sleeping four, and a workspace for the people who
-                need to answer email between surfs. Yoga classes and evening entertainment run
-                through the week.
+                The workspace is the part most people come for: a separate air-conditioned room of
+                proper desks, trading as Connect Co-Working Space, with fibre WiFi and the quiet to
+                use it. Around it are rooms that range from a bunk in the female-only dorm to a
+                family suite sleeping five, shared lounges, a long communal table, and yoga classes
+                and evening entertainment through the week.
               </p>
               <p>
                 It is a hostel, so it is social by design — but with air-conditioning, private
-                bathrooms in most rooms and cement bunks built to stay cool and quiet.
+                bathrooms in most rooms and cement bunks built to stay cool and quiet. Most of the
+                people at the desks are on European contracts and European deadlines, which the
+                four-and-a-half-hour head start on Berlin makes easier than it sounds.
               </p>
             </div>
           </section>
@@ -123,10 +126,8 @@ export const About: React.FC = () => {
             </div>
 
             <div className="lg:col-span-5 aspect-[4/3] lg:aspect-auto lg:min-h-[300px] bg-ink-soft overflow-hidden order-first lg:order-last">
-              <img
-                src={IMAGES.gardenTerraceDay}
-                alt="Guests on the garden terrace"
-                referrerPolicy="no-referrer"
+              <Photo
+                photo={IMAGES.gardenTerraceDay}
                 className="w-full h-full object-cover opacity-90"
               />
             </div>
