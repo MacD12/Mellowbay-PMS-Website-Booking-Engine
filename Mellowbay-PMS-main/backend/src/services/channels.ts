@@ -23,7 +23,7 @@ import {
   encryptSecret, decryptSecret, encryptionAvailable, redactSecrets,
 } from '../lib/secrets.ts';
 import {
-  Beds24Client, ChannelNotConfigured, ChannelApiError, readWriteResult,
+  Beds24Client, ChannelNotConfigured, ChannelCredentialUnreadable, ChannelApiError, readWriteResult,
   compressCalendar, normaliseBooking, type Beds24Credentials, type Beds24CalendarEntry,
 } from '../channels/beds24.ts';
 
@@ -160,7 +160,18 @@ function settingsWithCredentials(channel: ChannelCredentialSource): {
   const stored = settings.credentials;
   if (typeof stored === 'string') {
     // Encrypted: one opaque string in place of the credentials object.
-    return { settings, credentials: JSON.parse(decryptSecret(stored)) as Beds24Credentials };
+    try {
+      return { settings, credentials: JSON.parse(decryptSecret(stored)) as Beds24Credentials };
+    } catch (e) {
+      // Retyped, not reworded. `decryptSecret` already says the useful thing —
+      // the key has changed, restore it or re-enter the credential — but as a
+      // bare Error it reached the callers as an unhandled fault: the channel
+      // row kept saying `connected`, nothing was written to the sync log, and
+      // the only trace was one stderr line per poll, forever. As a
+      // `ChannelNotConfigured` subclass it travels the path every other
+      // credential problem already takes.
+      throw new ChannelCredentialUnreadable(e instanceof Error ? e.message : String(e));
+    }
   }
   return { settings, credentials: (stored ?? {}) as Beds24Credentials };
 }
@@ -288,9 +299,12 @@ export async function connectBeds24(
 
 export async function testConnection(propertyId: string, actor: Actor, channelId: string) {
   const channel = getChannel(propertyId, channelId);
-  const client = clientFor(propertyId, channel);
   const started = Date.now();
   try {
+    // Built inside the try. Constructing it above meant an unreadable
+    // credential threw past this catch — so the one screen an operator opens to
+    // find out what is wrong answered with a 500 instead of the reason.
+    const client = clientFor(propertyId, channel);
     const res = await client.listProperties();
     const properties = (res.data as any)?.data ?? [];
     run(
@@ -760,7 +774,6 @@ export async function pushToChannel(
     throw new HttpError(409, message, 'no_mappings');
   }
 
-  const client = clientFor(propertyId, channel);
   const currencyDivisor = 100;
   const entries: Beds24CalendarEntry[] = [];
 
@@ -792,6 +805,10 @@ export async function pushToChannel(
 
   const started = Date.now();
   try {
+    // Inside the try for the same reason as the read paths: a credential that
+    // cannot be decrypted is a channel fault, and it must be recorded as one
+    // rather than escaping a push that then looks like it never happened.
+    const client = clientFor(propertyId, channel);
     const res = await client.setCalendar(entries);
     // Envelope *and* per-item — see `readWriteResult`. Checking only the
     // envelope marked this channel healthy while individual rooms were being
@@ -1048,7 +1065,6 @@ export async function importBookings(
   propertyId: string, actor: Actor, channelId: string, opts: { since?: string } = {},
 ) {
   const channel = getChannel(propertyId, channelId);
-  const client = clientFor(propertyId, channel);
   // Where to read from.
   //
   // The watermark must come from successful *booking imports* and nothing else.
@@ -1070,6 +1086,9 @@ export async function importBookings(
   const started = Date.now();
   let payload: any;
   try {
+    // Inside the try: this is the loop that runs unattended every few minutes,
+    // so a credential fault raised out here is the one nobody ever sees.
+    const client = clientFor(propertyId, channel);
     payload = await client.getBookings({
       modifiedFrom: since.slice(0, 10),
       propertyId: channel.external_property_id ?? undefined,

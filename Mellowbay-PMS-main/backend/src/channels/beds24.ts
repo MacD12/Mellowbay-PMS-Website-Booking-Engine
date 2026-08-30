@@ -45,6 +45,26 @@ export class ChannelNotConfigured extends Error {
   }
 }
 
+/**
+ * The credential is there but cannot be read — a changed `HELIO_SECRET_KEY`, or
+ * a database file restored beside a different one.
+ *
+ * A subclass of `ChannelNotConfigured` on purpose. Every caller that asks "is
+ * there a usable credential here?" already tests for that type, and the answer
+ * is no: a token nobody can decrypt buys exactly as much as a token that was
+ * never entered. Inheriting the type means such a channel reports
+ * `not-configured` in the UI and is skipped by the booking poll — which is the
+ * correct behaviour, because unlike a network blip this cannot come right on
+ * its own. Only re-entering the credential fixes it.
+ *
+ * Distinguishable by its own `code` so the difference is still legible where it
+ * matters, and the message is the one from `decryptSecret`, which says what to
+ * do about it.
+ */
+export class ChannelCredentialUnreadable extends ChannelNotConfigured {
+  override code = 'credential_unreadable';
+}
+
 export class ChannelApiError extends Error {
   code = 'channel_api_error';
   status: number;
