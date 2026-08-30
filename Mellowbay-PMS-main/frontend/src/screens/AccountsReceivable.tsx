@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Wallet, Plus, Receipt, Building2 } from 'lucide-react';
+import { Wallet, Plus, Receipt, Building2, Printer } from 'lucide-react';
 import {
   useArAccounts, useArAccount, useArPayment, useCompanies, useCreateCompany,
-  useUpdateCompany, useInvoices,
+  useUpdateCompany, useInvoices, useInvoiceDocument,
 } from '../queries';
 import { useAuthStore } from '../stores';
 import { Card, Pill, Button, SectionHeader, Tabs, Field, Select, TextInput, Modal } from '../ui';
@@ -10,6 +10,7 @@ import {
   QueryState, useToast, MoneyInput, NumberInput, DateInput, PermissionButton, Toggle, statusTone,
 } from '../components';
 import { money, longDate, bpToPercent, percentToBp } from '../format';
+import { InvoicePaper, printInvoice } from '../invoice';
 
 export function AccountsReceivableScreen({ companyId }: { companyId?: string }) {
   const toast = useToast();
@@ -22,6 +23,8 @@ export function AccountsReceivableScreen({ companyId }: { companyId?: string }) 
   const updateCompany = useUpdateCompany();
 
   const [tab, setTab] = useState<'ledger' | 'invoices' | 'companies'>('ledger');
+  /** The invoice open in the print preview, if any. */
+  const [viewing, setViewing] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string>(companyId ?? '');
   const account = useArAccount(selectedId || undefined);
 
@@ -200,6 +203,7 @@ export function AccountsReceivableScreen({ companyId }: { companyId?: string }) 
                       <th className="pb-2 text-right">Total</th>
                       <th className="pb-2 text-right">Paid</th>
                       <th className="pb-2 text-right">Status</th>
+                      <th className="pb-2 text-right">Invoice</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -214,6 +218,11 @@ export function AccountsReceivableScreen({ companyId }: { companyId?: string }) 
                         <td className="py-2 text-right tabular-nums font-bold">{money(i.totalMinor)}</td>
                         <td className="py-2 text-right tabular-nums">{money(i.paidMinor)}</td>
                         <td className="py-2 text-right"><Pill tone={statusTone(i.status)}>{i.status}</Pill></td>
+                        <td className="py-2 text-right">
+                          <Button variant="secondary" onClick={() => setViewing(i.id)}>
+                            <Receipt className="w-3.5 h-3.5" /> View
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -223,6 +232,8 @@ export function AccountsReceivableScreen({ companyId }: { companyId?: string }) 
           )}
         </QueryState>
       )}
+
+      <InvoiceModal invoiceId={viewing} onClose={() => setViewing(null)} />
 
       {tab === 'companies' && (
         <QueryState query={companies} loadingRows={4}
@@ -355,5 +366,44 @@ export function AccountsReceivableScreen({ companyId }: { companyId?: string }) 
         </div>
       </Modal>
     </div>
+  );
+}
+
+/**
+ * The invoice, ready to hand over.
+ *
+ * `print-hide` on the toolbar rather than a conditional render: the print
+ * stylesheet drops it, so what the operator previews in the dialog is the paper
+ * alone, with no "Print" button printed onto it.
+ */
+export function InvoiceModal({ invoiceId, onClose }: { invoiceId: string | null; onClose: () => void }) {
+  const doc = useInvoiceDocument(invoiceId);
+  return (
+    <Modal
+      open={!!invoiceId}
+      onClose={onClose}
+      title="Invoice"
+      size="xl"
+      footer={
+        <div className="flex items-center gap-2 print-hide">
+          <Button variant="secondary" onClick={onClose}>Close</Button>
+          <Button onClick={printInvoice} disabled={!doc.data}>
+            <Printer className="w-3.5 h-3.5" /> Print / Save as PDF
+          </Button>
+        </div>
+      }
+    >
+      <QueryState query={doc} loadingRows={6}>
+        {(d) => (
+          <>
+            <p className="text-[11px] text-dash-muted mb-3 print-hide">
+              Choose <span className="font-semibold">Save as PDF</span> as the destination in the print
+              dialog to send the guest a copy.
+            </p>
+            <InvoicePaper doc={d} />
+          </>
+        )}
+      </QueryState>
+    </Modal>
   );
 }

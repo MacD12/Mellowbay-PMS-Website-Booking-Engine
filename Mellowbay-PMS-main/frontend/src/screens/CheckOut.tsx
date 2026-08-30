@@ -12,6 +12,7 @@ import { useAuthStore } from '../stores';
 import { Card, Pill, Button, SectionHeader, Field, Select, TextInput, Modal } from '../ui';
 import { QueryState, useToast, MoneyInput, ErrorNote, PermissionButton } from '../components';
 import { money, longDate, timestamp } from '../format';
+import { InvoiceModal } from './AccountsReceivable';
 
 export function CheckOutScreen({ reservationId }: { reservationId?: string }) {
   const { navigate, back } = useNav();
@@ -32,6 +33,8 @@ export function CheckOutScreen({ reservationId }: { reservationId?: string }) {
   const [pay, setPay] = useState<PaymentDraft | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  /** Set once an invoice is issued, to show the printable copy straight away. */
+  const [issuedInvoiceId, setIssuedInvoiceId] = useState<string | null>(null);
   const [invoiceTo, setInvoiceTo] = useState('');
   const [invoiceCompany, setInvoiceCompany] = useState('');
   const [toCityLedger, setToCityLedger] = useState(false);
@@ -329,6 +332,11 @@ export function CheckOutScreen({ reservationId }: { reservationId?: string }) {
                   toast.success(`Invoice ${inv.number} issued`,
                     toCityLedger ? 'Balance moved to the city ledger' : undefined);
                   setInvoiceOpen(false);
+                  // Straight into the printable copy. A guest standing at the
+                  // desk wants the invoice in their hand, and making them ask
+                  // for it — or sending the operator to Accounts receivable to
+                  // find it — is the step that gets skipped.
+                  setIssuedInvoiceId(inv.id);
                 } catch (e) {
                   toast.fail(e, 'Could not issue the invoice');
                 }
@@ -364,6 +372,8 @@ export function CheckOutScreen({ reservationId }: { reservationId?: string }) {
           )}
         </div>
       </Modal>
+
+      <InvoiceModal invoiceId={issuedInvoiceId} onClose={() => setIssuedInvoiceId(null)} />
     </div>
   );
 }

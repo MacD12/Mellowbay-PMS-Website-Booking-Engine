@@ -558,6 +558,58 @@ export interface Invoice {
   currency: string;
 }
 
+/** The logo and wording a property puts on the invoices it issues. */
+export interface InvoiceBranding {
+  logoDataUrl: string | null;
+  headerName: string | null;
+  footerNote: string | null;
+  terms: string | null;
+  showTaxId: boolean;
+}
+
+export interface InvoiceDocumentLine {
+  date: string;
+  code: string;
+  description: string;
+  qty: number;
+  unitMinor: number;
+  amountMinor: number;
+}
+
+/**
+ * Everything printed on one invoice.
+ *
+ * Distinct from `Invoice`, which is the row in the list: that says an invoice
+ * exists and what it came to, this says what was on it. Assembled by the API
+ * from the folio the invoice was cut from, so a reprint shows the same paper
+ * the guest was handed rather than a folio that has moved on since.
+ */
+export interface InvoiceDocument {
+  invoice: {
+    id: string; number: string; issuedAt: string; dueAt: string | null;
+    status: string; currency: string;
+    netMinor: number; taxMinor: number; totalMinor: number;
+    paidMinor: number; balanceMinor: number;
+    createdBy: string | null;
+  };
+  from: {
+    name: string; legalName: string | null; address: string | null;
+    city: string | null; country: string | null;
+    phone: string | null; email: string | null; website: string | null;
+    taxId: string | null;
+  };
+  billTo: { name: string; address: string | null; company: string | null };
+  stay: {
+    confirmation: string | null; guest: string | null;
+    arrival: string | null; departure: string | null; nights: number | null;
+    roomNumber: string | null; roomType: string | null;
+  } | null;
+  lines: InvoiceDocumentLine[];
+  taxes: { code: string; description: string; amountMinor: number }[];
+  payments: { date: string; description: string; method: string | null; amountMinor: number }[];
+  branding: InvoiceBranding;
+}
+
 export interface Company {
   id: string;
   code: string;

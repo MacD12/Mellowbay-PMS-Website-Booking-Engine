@@ -11,6 +11,7 @@ import {
 } from '../queries';
 import { AlertSettingsPanel } from './AlertSettings';
 import { PaymentSettingsTab } from './PaymentSettings';
+import { InvoiceBrandingTab } from './InvoiceBranding';
 import { useAuthStore } from '../stores';
 import { Card, Pill, Button, SectionHeader, Tabs, Field, Select, TextInput, Modal } from '../ui';
 import {
@@ -21,7 +22,7 @@ import { money, bpToPercent, percentToBp } from '../format';
 
 export function ConfigurationScreen() {
   const [tab, setTab] = useState<
-    'property' | 'roomTypes' | 'rooms' | 'taxes' | 'codes' | 'payments' | 'policies' | 'alerts'
+    'property' | 'roomTypes' | 'rooms' | 'taxes' | 'codes' | 'payments' | 'policies' | 'alerts' | 'invoice'
   >('property');
 
   return (
@@ -40,6 +41,7 @@ export function ConfigurationScreen() {
               { value: 'payments', label: 'Payments' },
               { value: 'policies', label: 'Policies' },
               { value: 'alerts', label: 'Alert sounds' },
+              { value: 'invoice', label: 'Invoice branding' },
             ]}
             active={tab}
             onChange={setTab}
@@ -54,6 +56,7 @@ export function ConfigurationScreen() {
       {tab === 'payments' && <PaymentSettingsTab />}
       {tab === 'policies' && <PoliciesTab />}
       {tab === 'alerts' && <AlertSettingsPanel />}
+      {tab === 'invoice' && <InvoiceBrandingTab />}
     </RequirePermission>
   );
 }

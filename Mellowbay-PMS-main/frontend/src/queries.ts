@@ -14,7 +14,7 @@ import { useAuthStore } from './stores';
 import type {
   Reservation, ReservationDetail, RoomType, Room, Bed, RoomBlock, RatePlan,
   RateCalendarRow, Restriction, YieldRule, Promotion, Tax, TransactionCode,
-  Folio, FolioSummary, Invoice, Company, ArAccount, CashierShift,
+  Folio, FolioSummary, Invoice, InvoiceDocument, InvoiceBranding, Company, ArAccount, CashierShift,
   BoardRoom, HkTask, WorkOrder, LostFoundItem, AuditPreflight, DailyStats,
   Profile, ProfileDetail, KpiSummary, DashboardSnapshot, FrontDeskLists, ProductionRow,
   BookingConfirmation, RegistrationLink, PaymentMethodList, PaymentSettings,
@@ -977,6 +977,28 @@ export function useReservationFolios(reservationId?: string) {
 export function useInvoices() {
   return useQuery({ queryKey: keys.invoices, queryFn: () => api.get<Invoice[]>('/api/invoices') });
 }
+
+/**
+ * The printable document behind one invoice.
+ *
+ * Fetched only when an invoice is actually opened: it carries every folio line
+ * and the property's logo, which is far more than the list needs and would be
+ * wasteful to hold for three hundred rows.
+ */
+export function useInvoiceDocument(invoiceId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['invoice-document', invoiceId] as const,
+    queryFn: () => api.get<InvoiceDocument>(`/api/invoices/${invoiceId}/document`),
+    enabled: !!invoiceId,
+  });
+}
+
+export function useInvoiceBranding() {
+  return useQuery({
+    queryKey: ['invoice-branding'] as const,
+    queryFn: () => api.get<InvoiceBranding>('/api/config/invoice-branding'),
+  });
+}
 export function useCompanies() {
   return useQuery({ queryKey: keys.companies, queryFn: () => api.get<Company[]>('/api/companies') });
 }
@@ -1457,6 +1479,11 @@ export const useRoomingList = mutation<{ id: string; rows: any[] }>(
   ({ id, rows }) => api.post(`/api/groups/${id}/rooming-list`, { rows }), ['groups', 'group', ...OPERATIONAL]);
 export const useAddWaitlist = mutation<Record<string, unknown>>(
   (body) => api.post('/api/waitlist', body), ['waitlist']);
+
+export const useSaveInvoiceBranding = mutation<Partial<InvoiceBranding>>(
+  (body) => api.put('/api/config/invoice-branding', body),
+  // Every open invoice re-renders with the new logo without a reload.
+  ['invoice-branding', 'invoice-document']);
 
 // Folios
 export const usePostCharge = mutation<{ folioId: string; body: Record<string, unknown> }>(
