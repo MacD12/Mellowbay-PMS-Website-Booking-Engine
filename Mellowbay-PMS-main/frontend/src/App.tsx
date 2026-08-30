@@ -1,39 +1,57 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { NavContext } from './nav';
 import { useAuthStore } from './stores';
 import type { ScreenName, ScreenState } from './types';
 import { AppShell } from './layout';
+import { ErrorBoundary } from './ErrorBoundary';
 
+// ─── What loads when ────────────────────────────────────────────
+//
+// The gates below stay eager. They are the first thing anyone sees, they are
+// small, and a receptionist waiting on a second chunk before the login form
+// appears would be a worse start than the one bundle ever was.
 import { LoginScreen } from './screens/Login';
 import { PasswordChangeScreen } from './screens/PasswordChange';
 import { SetupScreen } from './screens/Setup';
 import { PropertySelectScreen } from './screens/PropertySelect';
-import { DashboardScreen } from './screens/Dashboard';
-import { ReservationsScreen } from './screens/Reservations';
-import { NewReservationScreen } from './screens/NewReservation';
-import { ArrivalsScreen } from './screens/Arrivals';
-import { CheckInScreen } from './screens/CheckIn';
-import { InHouseScreen } from './screens/InHouse';
-import { GuestDashboardScreen } from './screens/GuestDashboard';
-import { DeparturesScreen } from './screens/Departures';
-import { CheckOutScreen } from './screens/CheckOut';
-import { CashierScreen } from './screens/Cashier';
-import { HousekeepingScreen } from './screens/Housekeeping';
-import { NightAuditScreen } from './screens/NightAudit';
-import { InboxScreen } from './screens/Inbox';
-import { ErrorBoundary } from './ErrorBoundary';
-import { OverbookingScreen } from './screens/Overbooking';
-import { ProfilesScreen } from './screens/Profiles';
-import { ProfileDetailScreen } from './screens/ProfileDetail';
-import { ReportsScreen } from './screens/Reports';
-import { CalendarScreen } from './screens/Calendar';
-import { ChannelManagerScreen } from './screens/ChannelManager';
-import { RatesInventoryScreen } from './screens/RatesInventory';
-import { PackagesScreen } from './screens/Packages';
-import { GroupsScreen } from './screens/Groups';
-import { AccountsReceivableScreen } from './screens/AccountsReceivable';
-import { ConfigurationScreen } from './screens/Configuration';
-import { AdministrationScreen } from './screens/Administration';
+
+// Everything inside the shell is fetched when it is first opened.
+//
+// All twenty-five used to be pulled into one 1.6 MB chunk, so the desk
+// downloaded the charting library for Reports and the QR encoder for Security
+// in order to look at this morning's arrivals. Splitting them also means a
+// change to one screen no longer invalidates the whole bundle for every
+// installed copy — which for a PWA that precaches is the difference between
+// re-downloading 1.6 MB after a deploy and re-downloading the part that moved.
+//
+// The service worker still precaches every chunk (`globPatterns` in
+// vite.config.ts covers them), so an installed app remains fully offline-capable
+// rather than trading startup speed for a screen that cannot open on bad wifi.
+const DashboardScreen = lazy(() => import('./screens/Dashboard').then((m) => ({ default: m.DashboardScreen })));
+const ReservationsScreen = lazy(() => import('./screens/Reservations').then((m) => ({ default: m.ReservationsScreen })));
+const NewReservationScreen = lazy(() => import('./screens/NewReservation').then((m) => ({ default: m.NewReservationScreen })));
+const ArrivalsScreen = lazy(() => import('./screens/Arrivals').then((m) => ({ default: m.ArrivalsScreen })));
+const CheckInScreen = lazy(() => import('./screens/CheckIn').then((m) => ({ default: m.CheckInScreen })));
+const InHouseScreen = lazy(() => import('./screens/InHouse').then((m) => ({ default: m.InHouseScreen })));
+const GuestDashboardScreen = lazy(() => import('./screens/GuestDashboard').then((m) => ({ default: m.GuestDashboardScreen })));
+const DeparturesScreen = lazy(() => import('./screens/Departures').then((m) => ({ default: m.DeparturesScreen })));
+const CheckOutScreen = lazy(() => import('./screens/CheckOut').then((m) => ({ default: m.CheckOutScreen })));
+const CashierScreen = lazy(() => import('./screens/Cashier').then((m) => ({ default: m.CashierScreen })));
+const HousekeepingScreen = lazy(() => import('./screens/Housekeeping').then((m) => ({ default: m.HousekeepingScreen })));
+const NightAuditScreen = lazy(() => import('./screens/NightAudit').then((m) => ({ default: m.NightAuditScreen })));
+const InboxScreen = lazy(() => import('./screens/Inbox').then((m) => ({ default: m.InboxScreen })));
+const OverbookingScreen = lazy(() => import('./screens/Overbooking').then((m) => ({ default: m.OverbookingScreen })));
+const ProfilesScreen = lazy(() => import('./screens/Profiles').then((m) => ({ default: m.ProfilesScreen })));
+const ProfileDetailScreen = lazy(() => import('./screens/ProfileDetail').then((m) => ({ default: m.ProfileDetailScreen })));
+const ReportsScreen = lazy(() => import('./screens/Reports').then((m) => ({ default: m.ReportsScreen })));
+const CalendarScreen = lazy(() => import('./screens/Calendar').then((m) => ({ default: m.CalendarScreen })));
+const ChannelManagerScreen = lazy(() => import('./screens/ChannelManager').then((m) => ({ default: m.ChannelManagerScreen })));
+const RatesInventoryScreen = lazy(() => import('./screens/RatesInventory').then((m) => ({ default: m.RatesInventoryScreen })));
+const PackagesScreen = lazy(() => import('./screens/Packages').then((m) => ({ default: m.PackagesScreen })));
+const GroupsScreen = lazy(() => import('./screens/Groups').then((m) => ({ default: m.GroupsScreen })));
+const AccountsReceivableScreen = lazy(() => import('./screens/AccountsReceivable').then((m) => ({ default: m.AccountsReceivableScreen })));
+const ConfigurationScreen = lazy(() => import('./screens/Configuration').then((m) => ({ default: m.ConfigurationScreen })));
+const AdministrationScreen = lazy(() => import('./screens/Administration').then((m) => ({ default: m.AdministrationScreen })));
 
 // ─── Hash routing ───────────────────────────────────────────────
 // Auth-flow states (login / setup / property-select) are gated by session
@@ -133,10 +151,32 @@ export default function App() {
           resetKey={`${screen.name}:${JSON.stringify(screen.params ?? {})}`}
           onGoHome={() => navigate('dashboard')}
         >
-          {renderScreen(screen)}
+          {/* Inside the boundary, so a chunk that fails to arrive — a deploy
+              mid-shift, a dropped connection — lands on the same "something went
+              wrong, go home" panel as any other screen failure rather than
+              leaving the desk on a spinner that never resolves. */}
+          <Suspense fallback={<ScreenLoading />}>
+            {renderScreen(screen)}
+          </Suspense>
         </ErrorBoundary>
       </AppShell>
     </NavContext.Provider>
+  );
+}
+
+/**
+ * Shown while a screen's chunk is on its way.
+ *
+ * Deliberately quiet and centred in the content area rather than a full-page
+ * spinner: the shell — navigation, search, the property switcher — is already
+ * on screen and stays usable, so this must read as one panel filling in, not as
+ * the application restarting.
+ */
+function ScreenLoading() {
+  return (
+    <div className="flex items-center justify-center py-24" role="status" aria-label="Loading">
+      <div className="w-8 h-8 border-[3px] border-black/10 border-t-black rounded-full animate-spin" />
+    </div>
   );
 }
 

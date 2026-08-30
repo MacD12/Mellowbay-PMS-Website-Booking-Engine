@@ -157,6 +157,37 @@ export default defineConfig(({mode}) => {
         },
       }),
     ],
+    build: {
+      rollupOptions: {
+        output: {
+          /**
+           * Keep the big third-party libraries in chunks of their own.
+           *
+           * Screens are already split by `lazy()` in App.tsx, but without this
+           * a library used by two screens is duplicated into both, and — worse
+           * for an installed PWA — React and friends land in the same chunk as
+           * application code, so editing one screen makes every client
+           * re-download the framework too.
+           *
+           * Grouped rather than one-chunk-per-package on purpose: a hundred
+           * tiny requests is its own problem, and these four move at completely
+           * different rates. React changes twice a year, the app changes daily.
+           */
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            // react-dom pulls react in; keeping them together avoids a chunk
+            // that cannot initialise until a sibling has already run.
+            if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return 'react';
+            // Only Dashboard and Reports use it, and it is the single largest
+            // dependency here.
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+            if (id.includes('motion') || id.includes('framer')) return 'motion';
+            if (id.includes('i18next')) return 'i18n';
+            return 'vendor';
+          },
+        },
+      },
+    },
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },

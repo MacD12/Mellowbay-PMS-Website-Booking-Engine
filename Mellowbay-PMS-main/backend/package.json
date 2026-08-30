@@ -8,6 +8,8 @@
     "node": ">=22.6"
   },
   "scripts": {
+    "build": "npm run typecheck",
+    "typecheck": "node ../frontend/node_modules/typescript/bin/tsc -p tsconfig.json",
     "start": "node --no-warnings --experimental-strip-types --experimental-sqlite src/index.ts",
     "config": "node --no-warnings --experimental-strip-types --experimental-sqlite scripts/config-doctor.ts",
     "config:check": "node --no-warnings --experimental-strip-types --experimental-sqlite scripts/config-doctor.ts --check",

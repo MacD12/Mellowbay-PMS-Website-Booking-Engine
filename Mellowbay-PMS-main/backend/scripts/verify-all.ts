@@ -270,7 +270,10 @@ async function main() {
   const b = await startInstance('demo');
   await step('Demo seed', 'demo.ts', b);
 
-  const creds = { SMOKE_EMAIL: DEMO_EMAIL, SMOKE_PASSWORD: DEMO_PASSWORD };
+  // DEMO_PASSWORD has no fallback; leave the variable unset when it is missing
+  // so the child scripts print their own "Set SMOKE_EMAIL / SMOKE_PASSWORD" hint.
+  const creds: Record<string, string> = { SMOKE_EMAIL: DEMO_EMAIL };
+  if (DEMO_PASSWORD) creds.SMOKE_PASSWORD = DEMO_PASSWORD;
   await step('Screen data', 'screens.ts', b, creds);
   await step('Authentication', 'auth-check.ts', b, creds);
   await step('Booking concurrency', 'concurrency.ts', b, creds);
