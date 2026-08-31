@@ -6,12 +6,23 @@ dist/
 build/
 coverage/
 
-# Databases — the system of record is never committed
+# Databases — the system of record is never committed.
+#
+# data/ and backups/ are anchored to backend/ on purpose. Written bare, a
+# `data/` rule matches a directory named data at ANY depth, and that silently
+# excluded booking-engine/src/data/mockData.ts — the website's entire content
+# layer — from every clone. The working copy still had it, so the build passed
+# locally and failed on a fresh checkout with:
+#
+#   Could not resolve "../data/mockData" from "src/pages/Coworking.tsx"
+#
+# Keep the leading slashes. backend/.gitignore repeats these rules for the
+# directory they actually protect.
 *.db
 *.db-wal
 *.db-shm
-data/
-backups/
+/backend/data/
+/backend/backups/
 
 # Local mongo dumps / migration artefacts
 *.bson
